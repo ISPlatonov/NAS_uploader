@@ -19,28 +19,6 @@ share_name = config['share_name']
 rel_path = config['path'].split('/')
 
 
-'''
-file_path = dst_name + '/' + 'Проектный семинар 10-03-2022.mkv'
-timestamp = get_last_updatetime(samba, share_name, file_path)
-print(datetime.datetime.fromtimestamp(timestamp))
-
-
-smb_dir = dst_name + '/' + 'Презентация лаборатории сетевых видеотехнологий'
-f_names =['лаба итог.prproj', 'Лаба.prproj']
-local_dir = ''
-download(samba, f_names, share_name, smb_dir, local_dir)
-
-path = smb_dir + '/' + 'aboba'
-createDir(samba, share_name, path)
-
-local_dir = '.vscode'
-f_names = ['settings.json']
-upload(samba, share_name, path, local_dir, f_names)
-
-samba.close()
-'''
-
-
 @app.route('/', methods=['GET'])
 def hello_world():
     try:
@@ -50,15 +28,23 @@ def hello_world():
         return "<h1>Error 404</h1><p>{}</p>".format(error)
 
 
-@app.route('/configure_path', methods=['GET', 'POST'])
-def configure_path():
-    '''
+@app.route('/upload_files', methods=['GET'])
+def upload_files():
     try:
-        return render_template('configure_path.html')
+        #files = all_file_names_in_dir(samba, config['share_name'], config['path'])
+        #print('files: {}'.format(files))
+        local_files = set(os.listdir('video'))
+        remote_files = set(all_file_names_in_dir(samba, config['share_name'], config['path']))
+        files = list(local_files.difference(remote_files))
+        upload(samba, config['share_name'], config['path'], config['source_path'], files) # needs to be async!
+        return "<h1>Uploaded!</h1><p>{}</p>".format(files)
     except Exception as error:
         print(repr(error))
         return "<h1>Error 404</h1><p>{}</p>".format(error)
-    '''
+
+
+@app.route('/configure_path', methods=['GET', 'POST'])
+def configure_path():
     global rel_path
     dirs = all_file_names_in_dir(samba, share_name, '/'.join(rel_path), is_directory=True)
     
