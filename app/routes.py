@@ -60,7 +60,7 @@ def configure_path():
         return "<h1>Error 404</h1><p>{}</p>".format(error)
     '''
     global rel_path
-    dirs = all_file_names_in_dir(samba, share_name, '/'.join(rel_path))
+    dirs = all_file_names_in_dir(samba, share_name, '/'.join(rel_path), is_directory=True)
     
     if request.method == 'POST':
         if 'submit_button' in request.form:
@@ -69,7 +69,7 @@ def configure_path():
                     config['path'] = '/'.join(rel_path)
                     json.dump(config, config_file)
                 return redirect(request.url)
-            elif request.form['submit_button'] == 'Go to current path':
+            elif request.form['submit_button'] == 'Go to default path':
                 rel_path = config['path'].split('/')
                 return redirect(request.url)
             else:
@@ -78,7 +78,7 @@ def configure_path():
         elif 'dir' in request.form:
             if request.form['dir'] in dirs:
                 rel_path.append(request.form['dir'])
-                dirs = all_file_names_in_dir(samba, share_name, '/'.join(rel_path))
+                dirs = all_file_names_in_dir(samba, share_name, '/'.join(rel_path), is_directory=True)
                 #return render_template('configure_path.html', form=request.form, dirs=dirs, share_name=share_name, dst_name='/'.join(rel_path))
                 return redirect(request.url)
             else:
@@ -87,7 +87,7 @@ def configure_path():
         elif 'go_back' in request.form:
             if request.form['go_back'] == 'Go back':
                 rel_path.pop()
-                dirs = all_file_names_in_dir(samba, share_name, '/'.join(rel_path))
+                dirs = all_file_names_in_dir(samba, share_name, '/'.join(rel_path), is_directory=True)
                 #return render_template('configure_path.html', form=request.form, dirs=dirs, share_name=share_name, dst_name='/'.join(rel_path))
                 return redirect(request.url)
             else:

@@ -25,11 +25,15 @@ def all_shares_name(samba):
     return share_names
 
 
-def all_file_names_in_dir(samba, service_name, dir_name, timeout=30):
+def all_file_names_in_dir(samba, service_name, dir_name, is_directory=False, timeout=30):
     f_names = list()
     for e in samba.listPath(service_name, dir_name, timeout):
         if e.filename[0] != '.':
-            f_names.append(e.filename)
+            if is_directory:
+                if e.isDirectory:
+                    f_names.append(e.filename)
+            else:
+                f_names.append(e.filename)
     return f_names
 
 
