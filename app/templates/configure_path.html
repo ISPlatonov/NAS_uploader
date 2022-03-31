@@ -24,8 +24,10 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <input type="submit" name="submit_button" value="Do Something">
-        <input type="submit" name="submit_button" value="Do Something Else">
+        {% if submit_button %}
+        <input type="submit" name="submit_button" value="Submit changes">
+        <input type="submit" name="submit_button" value="Go to current path">
+        {% endif %}
     </form>
 </body>
 </html>
