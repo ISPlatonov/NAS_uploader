@@ -4,30 +4,39 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/style.css">
     <title>Document</title>
 </head>
 <body>
-    <h1>ABOBA</h1>
-    <form action="/configure_path" method="post">
-        <h2>Share name: {{share_name}}</h2>
-        <h2>Path: {{dst_name}}</h2>
-        {% if go_back %}
-        <input type="submit" name="go_back" value="Go back">
-        {% endif %}
-        {% if dirs %}
-            <ul>
-                {% for dir in dirs %}
-                    <li>
-                        <!--<a href="/configure_path/{{ dir }}">{{ dir }}</a>-->
-                        <input type="submit" name="dir" value="{{dir}}">
-                    </li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-        {% if submit_button %}
-        <input type="submit" name="submit_button" value="Submit changes">
-        <input type="submit" name="submit_button" value="Go to default path">
-        {% endif %}
-    </form>
+    <main>
+        <hl>ABOBA</hl>
+        <content class="smaller">
+            <form action="/configure_path" method="post">
+                <p>Share name: {{share_name}}</p>
+                <p>Path: {{dst_name}}</p>
+                <content class="smaller">
+                    {% if go_back %}
+                    <input type="submit" name="go_back" value="Go back">
+                    {% endif %}
+                    {% if dirs %}
+                    <content class="smaller">
+                        <ul class="slash">
+                            {% for dir in dirs %}
+                                <li>
+                                    <!--<a href="/configure_path/{{ dir }}">{{ dir }}</a>-->
+                                    <input type="submit" name="dir" value="{{dir}}">
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </content>
+                    {% endif %}
+                    {% if submit_button %}
+                    <input type="submit" name="submit_button" value="Submit changes">
+                    <input type="submit" name="submit_button" value="Go to default path">
+                    {% endif %}
+                </content>
+            </form>
+        </content>
+    </main>
 </body>
 </html>
