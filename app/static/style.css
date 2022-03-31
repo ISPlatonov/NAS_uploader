@@ -6,11 +6,11 @@
     outline: 0;
     padding: 0;
     margin: 0;
-    background-color: rgb(37, 39, 41);;
-    color: #e8e6e3;
+    background-color: rgb(37, 39, 41);
 }
 
 body {
+    color: #e8e6e3;
     font-size: 1.5vw;
     font-weight: 400;
     min-width: 16em;
@@ -47,8 +47,21 @@ div {
 }
 
 p {
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
+    margin-top: .5em;
+    margin-bottom: .5em;
+}
+
+pl {
+    margin-top: .5em;
+    margin-bottom: .5em;
+    padding-bottom: .1em;
+    display: block;
+    border-bottom: solid .1em rgb(69, 139, 124);
+}
+
+monospace {
+    font-family: "Consolas", monospace;
+    color: rgb(211, 162, 84);
 }
 
 a {
@@ -99,10 +112,11 @@ input[type="submit"] {
     margin: .1em;
     background-color: #2b3533;
     padding: .1em;
+    color: inherit;
 }
 
 input[type="submit"]:hover {
-    background-color: #536865;
+    background-color: rgb(37, 39, 41);
     transition: background-color .3s;
 }
 
