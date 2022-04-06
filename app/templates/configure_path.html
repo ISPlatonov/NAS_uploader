@@ -17,25 +17,29 @@
                 {% if go_back %}
                 <input type="submit" name="go_back" value="Go back">
                 {% endif %}
-                {% if dirs %}
                 <content class="smaller">
                     <monospace>
                         <ul class="slash">
-                            {% for dir in dirs %}
+			    {% if dirs %}
+			    {% for dir in dirs %}
                                 <li>
                                     <!--<a href="/configure_path/{{ dir }}">{{ dir }}</a>-->
                                     <input type="submit" name="dir" value="{{dir}}">
                                 </li>
                             {% endfor %}
+			    {% endif %}
+			    <li>
+				<input type="text" name="new_dir_name">
+			    </li>
                         </ul>
                     </monospace>
                 </content>
-                {% endif %}
                 {% if submit_button %}
                 <input type="submit" name="submit_button" value="Submit changes">
                 <input type="submit" name="submit_button" value="Go to default path">
-                {% endif %}
-            </content>
+		{% endif %}
+		<input type="submit" name="create_dir" value="Create new directory">
+	    	</content>
         </form>
     </main>
 </body>

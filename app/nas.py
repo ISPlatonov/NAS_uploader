@@ -60,9 +60,18 @@ def createDir(samba, service_name, path):
 def upload(samba, service_name, smb_dir, local_dir, f_names):
     assert isinstance(f_names, list)
     for f_name in f_names:
-        f = open(os.path.join(local_dir, f_name), 'rb')
-        samba.storeFile(service_name, os.path.join(smb_dir, f_name), f)
-        f.close()
+        print(f'filename: {f_name}')
+        with open(os.path.join(local_dir, f_name), 'rb') as f:
+            dest_path = smb_dir + '/' + f_name
+            #dest_path = '\:'.join(dest_path.split(':'))
+            #dest_path = dest_path.encode('utf-8') 
+
+            print(f'dest_path: {dest_path}')
+            try:
+                samba.storeFile(service_name, dest_path, f)
+            except Exception:
+                print('cant storeFile')
+                raise
 
 
 if __name__ == '__main__':

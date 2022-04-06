@@ -120,6 +120,16 @@ input[type="submit"]:hover {
     transition: background-color .3s;
 }
 
+input[type="text"] {
+    font-family: inherit;
+    font-size: 1em;
+    border: solid .1em #536868;
+    margin: .1em;
+    background-color: #2b3533;
+    padding: .1em;
+    color: inherit;
+}
+
 ul.slash li::before {
     content: "/";
     margin-right: 0em;

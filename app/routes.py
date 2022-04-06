@@ -24,7 +24,6 @@ def hello_world():
     try:
         return render_template('index.html')
     except Exception as error:
-        print(repr(error))
         return "<h1>Error 404</h1><p>{}</p>".format(error)
 
 
@@ -33,13 +32,17 @@ def upload_files():
     try:
         #files = all_file_names_in_dir(samba, config['share_name'], config['path'])
         #print('files: {}'.format(files))
-        local_files = set(os.listdir('video'))
+        local_files = set(os.listdir(config['source_path']))
         remote_files = set(all_file_names_in_dir(samba, config['share_name'], config['path']))
         files = list(local_files.difference(remote_files))
+        #print(f'files: {files}')
         upload(samba, config['share_name'], config['path'], config['source_path'], files) # needs to be async!
-        return "<h1>Uploaded!</h1><p>{}</p>".format(files)
+        for file in files:
+            os.remove(config['source_path'] + '/' + file) 
+        #return "<h1>Uploaded!</h1><p>{}</p>".format(files)
+        return render_template('upload.html', uploaded_files=files)  
     except Exception as error:
-        print(repr(error))
+        print(error)
         return "<h1>Error 404</h1><p>{}</p>".format(error)
 
 
@@ -78,6 +81,11 @@ def configure_path():
                 return redirect(request.url)
             else:
                 return '<h1>Error 404</h1>', 404
+        elif 'create_dir' in request.form:
+            dir_name = request.form.get('new_dir_name')
+            createDir(samba, share_name, '/'.join(rel_path + [dir_name]))
+            return redirect(request.url)
+
         else:
             return '<h1>Error 404</h1>', 404
 

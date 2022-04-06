@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/style.css">
+    <title>Upload files</title>
+</head>
+<body>
+    <main>
+        <h><a href="/">To the main page</a></h>
+    	<h>Files uploaded!</h>
+	<content class="smaller">
+	    <ul>
+	    	{% for file in uploaded_files %}
+	    	    <li>{{file}}</li>
+	    	{% endfor %}
+	    </ul>
+	</content>
+    </main>
+</body>
+</html>
