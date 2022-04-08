@@ -4,6 +4,8 @@ from flask.json import jsonify
 from app import app
 from app.nas import *
 
+import re, subprocess
+
 
 with open('app/config.json') as config_file:
     config = json.load(config_file)
@@ -35,13 +37,49 @@ def upload_files():
         local_files = set(os.listdir(config['source_path']))
         remote_files = set(all_file_names_in_dir(samba, config['share_name'], config['path']))
         files = list(local_files.difference(remote_files))
-        #print(f'files: {files}')
-        upload(samba, config['share_name'], config['path'], config['source_path'], files) # needs to be async!
+
+        video_file_regex = re.compile('^\d{3}\ .*\_\d{2}\-\d{2}\-\d{4}\_\d{2}\-\d{2}\-\d{2}\_\d{2}\.mp4$') 
+        video_files = [file for file in files if video_file_regex.match(file)]
+        
+        audio_file_regex = re.compile('^audio\ \d{3}\ .*\_\d{2}\-\d{2}\-\d{4}\_\d{2}\-\d{2}\-\d{2}\_\d{2}\.aac$')
+        audio_files = [file for file in files if audio_file_regex.match(file)]
+        audio_files_dict = dict()
+        for audio_file in audio_files:
+            room = audio_file.split()[1]
+            if room not in audio_files_dict:
+                audio_files_dict[room] = [audio_file]
+            else:
+                audio_files_dict[room].append(audio_file)
+
+        merged_files = list()
+        for video_file in video_files:
+            room = video_file.split()[0]
+            if room not in audio_files_dict:
+                merged_files.append(video_file)
+                continue
+            audio_files_list = audio_files_dict[room]
+            date = '_'.join(''.join(video_file.split('.')[:-1]).split('_')[-3:])
+            for afile in audio_files_list:
+                if date == '_'.join(''.join(afile.split('.')[:-1]).split('_')[-3:]):
+                    audio_file = afile
+                else:
+                    merged_files.append(video_file)
+                    continue
+            
+            merged_file = 'merged ' + video_file
+            command = ['ffmpeg', '-i', config['source_path'] + '/' + audio_file, '-i', config['source_path'] + '/' + video_file, '-c', 'copy', config['source_path'] + '/' +  merged_file]
+            subprocess.run(command)
+            merged_files.append(merged_file)
+            files.append(merged_file)
+
+        upload(samba, config['share_name'], config['path'], config['source_path'], merged_files) # needs to be async!
         for file in files:
             os.remove(config['source_path'] + '/' + file) 
         #return "<h1>Uploaded!</h1><p>{}</p>".format(files)
-        return render_template('upload.html', uploaded_files=files)  
+        return render_template('upload.html', uploaded_files=merged_files)  
     except Exception as error:
+        print(type(error))
+        print(error.args)
         print(error)
         return "<h1>Error 404</h1><p>{}</p>".format(error)
 
