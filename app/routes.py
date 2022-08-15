@@ -4,7 +4,7 @@ from flask.json import jsonify
 from app import app
 from app.nas import *
 
-import re, subprocess
+import re, subprocess, copy
 
 
 with open('app/config.json') as config_file:
@@ -19,11 +19,14 @@ share_name = config['share_name']
 #dst_name = config['path'].split('/')
 
 rel_path = config['path'].split('/')
+uploading = False
 
 
 @app.route('/reconnect_to_nas', methods=['GET'])
 def reconnect_to_nas():
     try:
+        if uploading:
+            return redirect('/')
         samba, status = connect(config['username'], config['password'], config['ip'], config['port'])
         if not status:
             raise ConnectionError("Can't connect to NAS")
@@ -42,11 +45,16 @@ def hello_world():
 
 @app.route('/upload_files', methods=['GET'])
 def upload_files():
+    global uploading
     try:
+        if uploading:
+            return redirect('/')
+        cpconfig = copy.deepcopy(config)
+        uploading = True
         #files = all_file_names_in_dir(samba, config['share_name'], config['path'])
         #print('files: {}'.format(files))
-        local_files = set(os.listdir(config['source_path']))
-        remote_files = set(all_file_names_in_dir(samba, config['share_name'], config['path']))
+        local_files = set(os.listdir(cpconfig['source_path']))
+        remote_files = set(all_file_names_in_dir(samba, cpconfig['share_name'], cpconfig['path']))
         files = list(local_files.difference(remote_files))
         print(f'pure files: {files}')
 
@@ -86,23 +94,25 @@ def upload_files():
                     continue
             
             merged_file = 'merged ' + video_file
-            command = ['ffmpeg', '-i', config['source_path'] + '/' + audio_file, '-i', config['source_path'] + '/' + video_file, '-c', 'copy', config['source_path'] + '/' +  merged_file]
+            command = ['ffmpeg', '-i', cpconfig['source_path'] + '/' + audio_file, '-i', cpconfig['source_path'] + '/' + video_file, '-c', 'copy', cpconfig['source_path'] + '/' +  merged_file]
             subprocess.run(command)
             #os.remove(audio_file)
-            os.remove(config['source_path'] + '/' + video_file)
+            os.remove(cpconfig['source_path'] + '/' + video_file)
             merged_files.append(merged_file)
             #files.append(merged_file)
         print(f'merged files: {merged_files}')
         
         merged_files.extend(already_merged_video_files)
-        upload(samba, config['share_name'], config['path'], config['source_path'], merged_files) # needs to be async!
+        upload(samba, cpconfig['share_name'], cpconfig['path'], cpconfig['source_path'], merged_files) # needs to be async!
         for file in merged_files:
-            os.remove(config['source_path'] + '/' + file) 
+            os.remove(cpconfig['source_path'] + '/' + file) 
         for afile in audio_files:
-            os.remove(config['source_path'] + '/' + afile)
+            os.remove(cpconfig['source_path'] + '/' + afile)
         #return "<h1>Uploaded!</h1><p>{}</p>".format(files)
+        uploading = False
         return render_template('upload.html', uploaded_files=merged_files)  
     except Exception as error:
+        uploading = False
         print(type(error))
         print(error.args)
         print(error)
