@@ -8,10 +8,10 @@ def connect(user_name, passwd, ip, port):
     samba = None
     status = False
     try:
-        samba = SMBConnection(user_name, passwd, '', '', use_ntlm_v2=True)
-        samba.connect(ip, port)
-        status = samba.auth_result
-
+        while not status:
+            samba = SMBConnection(user_name, passwd, '', '', use_ntlm_v2=True)
+            samba.connect(ip, port)
+            status = samba.auth_result
     except:
         samba.close()
     return samba, status

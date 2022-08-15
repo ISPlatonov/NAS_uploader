@@ -1,4 +1,4 @@
-from flask import render_template, redirect
+from flask import render_template, redirect, url_for
 from flask.globals import request
 from flask.json import jsonify
 from app import app
@@ -21,6 +21,17 @@ share_name = config['share_name']
 rel_path = config['path'].split('/')
 
 
+@app.route('/reconnect_to_nas', methods=['GET'])
+def reconnect_to_nas():
+    try:
+        samba, status = connect(config['username'], config['password'], config['ip'], config['port'])
+        if not status:
+            raise ConnectionError("Can't connect to NAS")
+        return redirect('/')
+    except Exception as error:
+        return "<h1>Error 404</h1><p>{}</p>".format(error)
+
+
 @app.route('/', methods=['GET'])
 def hello_world():
     try:
@@ -39,11 +50,15 @@ def upload_files():
         files = list(local_files.difference(remote_files))
         print(f'pure files: {files}')
 
-        video_file_regex = re.compile('^\d{3}\ .*\_\d{2}\-\d{2}\-\d{4}\_\d{2}\-\d{2}\-\d{2}\_\d{2}\.mp4$') 
+        already_merged_video_file_regex = re.compile('^merged\ \d{3}.?\ .*\_\d{2}\-\d{2}\-\d{4}\_\d{2}\-\d{2}\-\d{2}\_\d{2}\.mp4$')
+        already_merged_video_files = [file for file in files if already_merged_video_file_regex.match(file)]
+        print(f'already merged video files: {already_merged_video_files}')
+
+        video_file_regex = re.compile('^\d{3}.?\ .*\_\d{2}\-\d{2}\-\d{4}\_\d{2}\-\d{2}\-\d{2}\_\d{2}\.mp4$')
         video_files = [file for file in files if video_file_regex.match(file)]
         print(f'video files: {video_files}')
         
-        audio_file_regex = re.compile('^audio\ \d{3}\ .*\_\d{2}\-\d{2}\-\d{4}\_\d{2}\-\d{2}\-\d{2}\_\d{2}\.aac$')
+        audio_file_regex = re.compile('^audio.?\ \d{3}\ .*\_\d{2}\-\d{2}\-\d{4}\_\d{2}\-\d{2}\-\d{2}\_\d{2}\.aac$')
         audio_files = [file for file in files if audio_file_regex.match(file)]
         print(f'audio files: {audio_files}')
         audio_files_dict = dict()
@@ -78,7 +93,8 @@ def upload_files():
             merged_files.append(merged_file)
             #files.append(merged_file)
         print(f'merged files: {merged_files}')
-
+        
+        merged_files.extend(already_merged_video_files)
         upload(samba, config['share_name'], config['path'], config['source_path'], merged_files) # needs to be async!
         for file in merged_files:
             os.remove(config['source_path'] + '/' + file) 
